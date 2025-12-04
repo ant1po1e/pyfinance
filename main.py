@@ -2,6 +2,9 @@ import csv
 import os
 import math
 import matplotlib.pyplot as plt
+from datetime import datetime
+from collections import defaultdict
+
 
 FILE_NAME = "log.csv"
 PAGE_SIZE = 5  # jumlah log per halaman
@@ -88,8 +91,8 @@ def add_log():
     print("=== TAMBAH TRANSAKSI ===")
     print("Tekan X untuk batal\n")
 
-    date = input("Tanggal (YYYY-MM-DD): ")
-    if exit_option(date): return
+    date = datetime.today().strftime("%Y-%m-%d")
+    print(f"Tanggal otomatis: {date}")
 
     tipe = input("Tipe (income/expense): ").lower()
     if exit_option(tipe): return
@@ -186,10 +189,42 @@ def show_main_summary():
 def show_graph():
     clear()
     logs = read_logs()
-    _, inc, exp = calculate_summary(logs)
 
-    plt.bar(["Income", "Expense"], [inc, exp])
-    plt.title("Grafik Pemasukan vs Pengeluaran")
+    if not logs:
+        print("Belum ada data untuk grafik!")
+        pause()
+        return
+
+    # Dictionary untuk menampung income & expense per bulan
+    monthly_income = defaultdict(int)
+    monthly_expense = defaultdict(int)
+
+    for l in logs:
+        # Ambil bulan dalam format YYYY-MM
+        month = l["date"][:7]
+
+        if l["type"] == "income":
+            monthly_income[month] += int(l["money"])
+        elif l["type"] == "expense":
+            monthly_expense[month] += int(l["money"])
+
+    # Convert ke list berurutan
+    months = sorted(set(monthly_income.keys()) | set(monthly_expense.keys()))
+    incomes = [monthly_income[m] for m in months]
+    expenses = [monthly_expense[m] for m in months]
+
+    # Plot grafik
+    x = range(len(months))
+    plt.figure(figsize=(10, 5))
+    plt.bar(x, incomes, width=0.4, label="Income")
+    plt.bar([i + 0.4 for i in x], expenses, width=0.4, label="Expense")
+
+    plt.xticks([i + 0.2 for i in x], months, rotation=45)
+    plt.title("Grafik Income / Expense Per Bulan")
+    plt.xlabel("Bulan")
+    plt.ylabel("Jumlah Uang")
+    plt.legend()
+    plt.tight_layout()
     plt.show()
 
 def main():
@@ -197,7 +232,7 @@ def main():
     while True:
         clear()
         print("╔═══════════════════════════╗")
-        print("║     APLIKASI TABUNGAN     ║")
+        print("║    APLIKASI TABUNGAN     ║")
         print("╚═══════════════════════════╝")
         show_main_summary()
         print("""

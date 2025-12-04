@@ -1,6 +1,6 @@
 date,type,money,reason
-1000-10-10,income,14000,
 2025-11-27,income,13000,
+2025-11-27,income,200000,makan
 2025-11-27,expense,13000,makan
 2025-11-27,expense,13000,makan
 2025-11-27,expense,13000,makan
@@ -15,4 +15,5 @@ date,type,money,reason
 2025-11-27,expense,13000,makan
 2025-11-27,expense,13000,makan
 2025-11-27,expense,13000,makan
-2025-11-27,expense,13000,makan
+2025-12-04,income,20000000,
+2025-12-04,income,10000,
