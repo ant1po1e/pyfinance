@@ -5,20 +5,37 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from collections import defaultdict
 
-
 FILE_NAME = "log.csv"
-PAGE_SIZE = 5  # jumlah log per halaman
+PAGE_SIZE = 5 
+
 
 def clear():
+    """
+    Membersihkan layar terminal.
+    Menyesuaikan perintah clear sesuai dengan sistem operasi
+    (Windows atau Linux/Mac).
+    """
     os.system("cls" if os.name == "nt" else "clear")
 
+
 def init_file():
+    """
+    Mengecek keberadaan file CSV penyimpanan data transaksi.
+    Jika file belum ada, maka file akan dibuat beserta header kolom.
+    """
     if not os.path.exists(FILE_NAME):
         with open(FILE_NAME, "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["date", "type", "money", "reason"])
 
+
 def read_logs():
+    """
+    Membaca seluruh data transaksi dari file CSV.
+
+    Return:
+        list: daftar transaksi dalam bentuk list of dictionary.
+    """
     logs = []
     with open(FILE_NAME, "r") as f:
         reader = csv.DictReader(f)
@@ -26,16 +43,38 @@ def read_logs():
             logs.append(row)
     return logs
 
+
 def calculate_summary(logs):
+    """
+    Menghitung ringkasan keuangan dari daftar transaksi.
+
+    Parameter:
+        logs (list): daftar transaksi.
+
+    Return:
+        tuple: (saldo_sekarang, total_income, total_expense)
+    """
     total_income = sum(int(l["money"]) for l in logs if l["type"] == "income")
     total_expense = sum(int(l["money"]) for l in logs if l["type"] == "expense")
     current_money = total_income - total_expense
     return current_money, total_income, total_expense
 
+
 def pause():
+    """
+    Memberhentikan sementara program sampai pengguna menekan ENTER.
+    Digunakan agar output dapat dibaca sebelum kembali ke menu.
+    """
     input("\nTekan ENTER untuk kembali...")
 
+
 def show_paginated_logs(logs):
+    """
+    Menampilkan daftar transaksi secara bertahap (pagination).
+
+    Parameter:
+        logs (list): daftar transaksi yang akan ditampilkan.
+    """
     if not logs:
         print("Belum ada log.")
         return
@@ -63,13 +102,18 @@ def show_paginated_logs(logs):
         elif nav == "x":
             break
 
+
 def show_summary():
+    """
+    Menampilkan ringkasan saldo, pemasukan, dan pengeluaran.
+    Setelah itu menampilkan daftar log transaksi secara bertahap.
+    """
     clear()
     logs = read_logs()
     current, inc, exp = calculate_summary(logs)
 
     print("╔══════════════════════════════╗")
-    print("║     RINGKASAN TABUNGAN      ║")
+    print("║      RINGKASAN TABUNGAN      ║")
     print("╚══════════════════════════════╝")
     print(f"Saldo Sekarang : {current}")
     print(f"Pemasukan      : {inc}")
@@ -79,20 +123,35 @@ def show_summary():
     show_paginated_logs(logs)
     pause()
 
+
 def exit_option(check):
+    """
+    Mengecek apakah pengguna memilih keluar (X).
+
+    Parameter:
+        check (str): input dari pengguna.
+
+    Return:
+        bool: True jika dibatalkan, False jika lanjut.
+    """
     if check.lower() == "x":
         print("Dibatalkan!")
         pause()
         return True
     return False
 
+
 def add_log():
+    """
+    Menambahkan transaksi baru ke dalam file CSV.
+    Tanggal transaksi otomatis menggunakan tanggal hari ini.
+    """
     clear()
     print("=== TAMBAH TRANSAKSI ===")
     print("Tekan X untuk batal\n")
 
     date = datetime.today().strftime("%Y-%m-%d")
-    print(f"Tanggal otomatis: {date}")
+    print(f"Tanggal: {date}")
 
     tipe = input("Tipe (income/expense): ").lower()
     if exit_option(tipe): return
@@ -119,7 +178,11 @@ def add_log():
     print("✔ Transaksi sukses ditambahkan!")
     pause()
 
+
 def edit_log():
+    """
+    Mengedit data transaksi berdasarkan indeks yang dipilih pengguna.
+    """
     clear()
     logs = read_logs()
     if not logs:
@@ -153,7 +216,11 @@ def edit_log():
     print("✔ Log diperbarui!")
     pause()
 
+
 def delete_log():
+    """
+    Menghapus transaksi berdasarkan indeks yang dipilih pengguna.
+    """
     clear()
     logs = read_logs()
     if not logs:
@@ -174,19 +241,38 @@ def delete_log():
         print("Index salah!")
     pause()
 
+
 def write_logs(logs):
+    """
+    Menyimpan ulang seluruh data transaksi ke file CSV.
+
+    Parameter:
+        logs (list): daftar transaksi yang akan ditulis.
+    """
     with open(FILE_NAME, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["date", "type", "money", "reason"])
         for l in logs:
             writer.writerow([l["date"], l["type"], l["money"], l["reason"]])
 
+
 def show_main_summary():
+    """
+    Menampilkan ringkasan singkat saldo, pemasukan, dan pengeluaran
+    pada menu utama.
+    """
     logs = read_logs()
     current, inc, exp = calculate_summary(logs)
-    print(f"Saldo: {current} | Income: {inc} | Expense: {exp}")
+    print(f"Saldo: {current} | Pemasukan: {inc} | Pengeluaran: {exp}")
+
 
 def show_graph():
+    """
+    Menampilkan grafik garis yang menunjukkan tren bulanan:
+    - Income
+    - Expense
+    - Saldo kumulatif
+    """
     clear()
     logs = read_logs()
 
@@ -195,44 +281,55 @@ def show_graph():
         pause()
         return
 
-    # Dictionary untuk menampung income & expense per bulan
     monthly_income = defaultdict(int)
     monthly_expense = defaultdict(int)
 
     for l in logs:
-        # Ambil bulan dalam format YYYY-MM
         month = l["date"][:7]
-
         if l["type"] == "income":
             monthly_income[month] += int(l["money"])
         elif l["type"] == "expense":
             monthly_expense[month] += int(l["money"])
 
-    # Convert ke list berurutan
     months = sorted(set(monthly_income.keys()) | set(monthly_expense.keys()))
-    incomes = [monthly_income[m] for m in months]
-    expenses = [monthly_expense[m] for m in months]
 
-    # Plot grafik
-    x = range(len(months))
+    incomes, expenses, balances = [], [], []
+    saldo = 0
+
+    for m in months:
+        inc = monthly_income[m]
+        exp = monthly_expense[m]
+        saldo += inc - exp
+
+        incomes.append(inc)
+        expenses.append(exp)
+        balances.append(saldo)
+
     plt.figure(figsize=(10, 5))
-    plt.bar(x, incomes, width=0.4, label="Income")
-    plt.bar([i + 0.4 for i in x], expenses, width=0.4, label="Expense")
+    plt.plot(months, incomes, marker="o", label="Income")
+    plt.plot(months, expenses, marker="o", label="Expense")
+    plt.plot(months, balances, marker="o", label="Saldo")
 
-    plt.xticks([i + 0.2 for i in x], months, rotation=45)
-    plt.title("Grafik Income / Expense Per Bulan")
     plt.xlabel("Bulan")
     plt.ylabel("Jumlah Uang")
+    plt.title("Grafik Tren Income, Expense, dan Saldo Bulanan")
+    plt.xticks(rotation=45)
     plt.legend()
+    plt.grid(True)
     plt.tight_layout()
     plt.show()
 
+
 def main():
+    """
+    Fungsi utama program.
+    Mengatur alur menu dan pemanggilan seluruh fitur aplikasi.
+    """
     init_file()
     while True:
         clear()
         print("╔═══════════════════════════╗")
-        print("║    APLIKASI TABUNGAN     ║")
+        print("║     APLIKASI TABUNGAN     ║")
         print("╚═══════════════════════════╝")
         show_main_summary()
         print("""
@@ -257,6 +354,7 @@ def main():
         else:
             print("Pilihan salah!")
             pause()
+
 
 if __name__ == "__main__":
     main()
