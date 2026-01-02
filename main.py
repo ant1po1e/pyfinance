@@ -160,8 +160,20 @@ def add_log():
         pause()
         return
 
-    money = input("Jumlah uang: ")
-    if exit_option(money): return
+    while True:
+        money = input("Jumlah uang: ")
+        if exit_option(money): return
+
+        if not money.isdigit():
+            print("Jumlah uang harus berupa angka dan tidak boleh kosong!")
+            continue
+
+        money = int(money)
+        if money <= 0:
+            print("Jumlah uang harus lebih dari 0!")
+            continue
+
+        break
 
     reason = ""
     if tipe == "expense":

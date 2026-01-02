@@ -1,9 +1,8 @@
 date,type,money,reason
-2025-01-15,income,1000,Salary
 2025-01-28,expense,1200,Groceries
 2025-02-03,income,5000,Salary
 2025-02-14,expense,800,Utilities
-2025-03-10,income,5000,Salary
+2025-03-10,income,10000,Salary
 2025-03-22,expense,2500,Rent
 2025-04-05,expense,450,Entertainment
 2025-04-20,income,3000,Salary
@@ -23,3 +22,7 @@ date,type,money,reason
 2025-11-28,income,2000,Salary
 2025-12-12,expense,1300,Holidays
 2025-12-31,income,5000,Salary
+2025-12-20,income,15000,
+2026-01-03,income,10000,
+2026-01-03,income,5000,
+2026-01-03,income,10000,
