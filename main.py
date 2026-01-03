@@ -316,13 +316,30 @@ def show_graph():
     monthly_expense = defaultdict(int)
 
     for l in logs:
-        if "type" not in l or "money" not in l or "date" not in l:
-            continue
+        for l in logs:
+            date = l.get("date", "").strip()
+            tipe = l.get("type", "").strip()
+            money = l.get("money", "").strip()
 
-        try:
-            amount = int(l["money"])
-        except (ValueError, TypeError):
-            continue
+            if not date or not tipe or not money:
+                continue
+
+            try:
+                amount = int(money)
+            except ValueError:
+                continue
+
+            month = date[:7]
+
+            if tipe == "income":
+                monthly_income[month] += amount
+            elif tipe == "expense":
+                monthly_expense[month] += amount
+
+            try:
+                amount = int(l["money"])
+            except (ValueError, TypeError):
+                continue
 
         month = l["date"][:7]
 
