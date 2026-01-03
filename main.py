@@ -13,7 +13,6 @@ def clear():
     """
     Membersihkan layar terminal.
     Menyesuaikan perintah clear sesuai dengan sistem operasi
-    (Windows atau Linux/Mac).
     """
     os.system("cls" if os.name == "nt" else "clear")
 
@@ -47,15 +46,27 @@ def read_logs():
 def calculate_summary(logs):
     """
     Menghitung ringkasan keuangan dari daftar transaksi.
-
-    Parameter:
-        logs (list): daftar transaksi.
-
-    Return:
-        tuple: (saldo_sekarang, total_income, total_expense)
+    Mengabaikan baris data yang tidak lengkap atau tidak valid.
     """
-    total_income = sum(int(l["money"]) for l in logs if l["type"] == "income")
-    total_expense = sum(int(l["money"]) for l in logs if l["type"] == "expense")
+    total_income = 0
+    total_expense = 0
+
+    for l in logs:
+        # Pastikan key penting ada
+        if "type" not in l or "money" not in l:
+            continue
+
+        # Pastikan nilai money valid
+        try:
+            amount = int(l["money"])
+        except (ValueError, TypeError):
+            continue
+
+        if l["type"] == "income":
+            total_income += amount
+        elif l["type"] == "expense":
+            total_expense += amount
+
     current_money = total_income - total_expense
     return current_money, total_income, total_expense
 
@@ -71,22 +82,31 @@ def pause():
 def show_paginated_logs(logs):
     """
     Menampilkan daftar transaksi secara bertahap (pagination).
-
-    Parameter:
-        logs (list): daftar transaksi yang akan ditampilkan.
+    Mengabaikan data yang tidak lengkap.
     """
     if not logs:
         print("Belum ada log.")
         return
 
+    # Filter hanya log yang valid
+    valid_logs = []
+    for l in logs:
+        if all(k in l for k in ("date", "type", "money", "reason")):
+            valid_logs.append(l)
+
+    if not valid_logs:
+        print("Tidak ada data valid untuk ditampilkan.")
+        pause()
+        return
+
     page = 0
-    max_page = math.ceil(len(logs) / PAGE_SIZE)
+    max_page = math.ceil(len(valid_logs) / PAGE_SIZE)
 
     while True:
         clear()
         start = page * PAGE_SIZE
         end = start + PAGE_SIZE
-        subset = logs[start:end]
+        subset = valid_logs[start:end]
 
         print(f"=== LOG TRANSAKSI (Page {page+1}/{max_page}) ===")
         for i, log in enumerate(subset, start):
@@ -101,7 +121,6 @@ def show_paginated_logs(logs):
             page -= 1
         elif nav == "x":
             break
-
 
 def show_summary():
     """
@@ -297,11 +316,20 @@ def show_graph():
     monthly_expense = defaultdict(int)
 
     for l in logs:
+        if "type" not in l or "money" not in l or "date" not in l:
+            continue
+
+        try:
+            amount = int(l["money"])
+        except (ValueError, TypeError):
+            continue
+
         month = l["date"][:7]
+
         if l["type"] == "income":
-            monthly_income[month] += int(l["money"])
+            monthly_income[month] += amount
         elif l["type"] == "expense":
-            monthly_expense[month] += int(l["money"])
+            monthly_expense[month] += amount
 
     months = sorted(set(monthly_income.keys()) | set(monthly_expense.keys()))
 
